@@ -54,23 +54,38 @@ if not areas_df.empty and not ocupaciones_df.empty:
                 id_area = area["ID_Espacio"]
                 nombre_area = area["Nombre Area"]
                 
-                # Regla de negocio para bloqueo total de parrillas
-                if id_area in lista_ocupados or ("PARR_TOT" in lista_ocupados and "PARR_" in str(id_area)):
+                # 1. BUSCAMOS QUIÉN REGISTRÓ ESTE ESPACIO HOY
+                # Primero buscamos el bloqueo exacto
+                reserva_exacta = ocupado_ese_dia[ocupado_ese_dia["ID_Espacio"] == id_area]
+                # También buscamos si hay un bloqueo total de parrillas
+                reserva_total_parrillas = ocupado_ese_dia[ocupado_ese_dia["ID_Espacio"] == "PARR_TOT"]
+                
+                quien_alquilo = ""
+                
+                if id_area in lista_ocupados:
                     disponible = False
+                    if not reserva_exacta.empty:
+                        quien_alquilo = str(reserva_exacta.iloc[0]["Registrado_Por"])
+                elif "PARR_TOT" in lista_ocupados and "PARR_" in str(id_area):
+                    disponible = False
+                    if not reserva_total_parrillas.empty:
+                        quien_alquilo = str(reserva_total_parrillas.iloc[0]["Registrado_Por"]) + " (Área Total)"
                 else:
                     disponible = True
                     
-                # Diseño de tarjetas informativas sin botones de acción
+                # Diseño de tarjetas informativas actualizadas
                 with st.container():
-                    col1, col2 = st.columns([3, 1])
+                    col1, col2 = st.columns()
                     with col1:
                         st.markdown(f"**{nombre_area}**")
-                        st.caption(f"Alquiler por día completo")
+                        # 2. MOSTRAR EL NOMBRE SI ESTÁ OCUPADO
+                        if not disponible and quien_alquilo and quien_alquilo != "nan":
+                            st.caption(f"👤 Reservado por: {quien_alquilo}")
+                        else:
+                            st.caption(f"Alquilado por día completo")
                     with col2:
                         if disponible:
                             st.success("🟢 Libre")
                         else:
                             st.error("🔴 Ocupado")
                     st.write("---")
-else:
-    st.warning("Configurando la conexión con la base de datos... Por favor, asegúrese de enlazar correctamente el Google Sheets.")
