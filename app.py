@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
+from html import escape
 
 # CONFIGURACIÓN DE LA PÁGINA MÓVIL
 st.set_page_config(page_title="Areas Sociales Mirador - Disponibilidad", page_icon="🏡", layout="centered")
@@ -11,11 +12,37 @@ st.markdown(
     .stApp {
         background-color: #00172b;
     }
+    .area-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.35rem 0;
+    }
+    .area-info {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .area-caption {
+        margin-top: 0.25rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
+    }
     .status-libre, .status-ocupado {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 7.5rem;
+        width: 7.5rem;
+        box-sizing: border-box;
         color: #ffffff;
         font-weight: 700;
         text-align: center;
-        padding: 0.5rem 0.75rem;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.5rem;
         border-radius: 0.5rem;
     }
     .status-libre {
@@ -24,6 +51,36 @@ st.markdown(
     .status-ocupado {
         background-color: #d50000;
     }
+    .tarifas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+    .tarifa-card {
+        flex: 1 1 12rem;
+        box-sizing: border-box;
+        padding: 1rem 1.1rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0.8rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+    }
+    .tarifa-nombre {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    .tarifa-precio {
+        margin: 0.35rem 0 0.15rem;
+        color: #ffffff;
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .tarifa-detalle {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 0.82rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -31,6 +88,25 @@ st.markdown(
 
 st.title("🏡 Disponibilidad Semanal")
 st.write("Consulta las áreas ocupadas y disponibles para los próximos 7 días.")
+st.info("⚠️ Esta plataforma es únicamente informativa. Para gestionar una Reserva, Contacte a la Administradora a los teléfonos 0412-0000000.")
+st.markdown(
+    """
+    <div class="tarifas">
+        <div class="tarifa-card">
+            <div class="tarifa-nombre">🛝 Parque Infantil</div>
+            <div class="tarifa-precio">$100</div>
+            <div class="tarifa-detalle">Toda el área · por uso</div>
+        </div>
+        <div class="tarifa-card">
+            <div class="tarifa-nombre">🔥 Parrilleras</div>
+            <div class="tarifa-precio">$40</div>
+            <div class="tarifa-detalle">Cada una · por uso</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+st.write("---")
 
 
 # 🔗 ENLACES DE TU GOOGLE SHEETS
@@ -46,6 +122,7 @@ def cargar_datos():
         ocupaciones['ID_Espacio'] = ocupaciones['ID_Espacio'].astype(str).str.strip()
         return areas, ocupaciones
     except Exception as e:
+        st.error(f"Error al cargar los datos: {e}")
         return pd.DataFrame(), pd.DataFrame()
 
 areas_df, ocupaciones_df = cargar_datos()
@@ -101,22 +178,24 @@ if not areas_df.empty and not ocupaciones_df.empty:
                 else:
                     disponible = True
 
-                # Diseño de tarjetas informativas actualizadas
-                with st.container():
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.markdown(f"**{nombre_area}**")
-                        # 2. MOSTRAR EL NOMBRE SI ESTÁ OCUPADO
-                        if not disponible:
-                            if quien_alquilo and str(quien_alquilo).strip().lower() != "nan":
-                                st.caption(f"👤 Reservado por: {quien_alquilo}")
-                            else:
-                                st.caption("👤 Reservado")
-                        else:
-                            st.caption("Disponible")
-                    with col2:
-                        if disponible:
-                            st.markdown('<div class="status-libre">🟢 Libre</div>', unsafe_allow_html=True)
-                        else:
-                            st.markdown('<div class="status-ocupado">🔴 Ocupado</div>', unsafe_allow_html=True)
-                    st.write("---")
+                if not disponible and quien_alquilo and str(quien_alquilo).strip().lower() != "nan":
+                    detalle = f"👤 Reservado por: {escape(quien_alquilo)}"
+                elif not disponible:
+                    detalle = "👤 Reservado"
+                else:
+                    detalle = "Disponible"
+
+                if disponible:
+                    estado = '<div class="status-libre">🟢 Libre</div>'
+                else:
+                    estado = '<div class="status-ocupado">🔴 Ocupado</div>'
+
+                st.markdown(
+                    f'<div class="area-card">'
+                    f'<div class="area-info">'
+                    f'<div><strong>{escape(nombre_area)}</strong></div>'
+                    f'<div class="area-caption">{detalle}</div>'
+                    f'</div>{estado}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.write("---")
