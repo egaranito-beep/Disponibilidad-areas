@@ -106,7 +106,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.write("---")
 
 
 # 🔗 ENLACES DE TU GOOGLE SHEETS
