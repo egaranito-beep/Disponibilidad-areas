@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 from html import escape
 
 # CONFIGURACIÓN DE LA PÁGINA MÓVIL
-st.set_page_config(page_title="Areas Sociales Mirador - Disponibilidad", page_icon="🏡", layout="centered")
+st.set_page_config(page_title="Areas Sociales Mirador", page_icon="🏡", layout="centered")
 
 st.markdown(
     """
     <style>
     .stApp {
         background-color: #00172b;
-    }
+    } 
     .area-card {
         display: flex;
         align-items: center;
@@ -20,7 +20,7 @@ st.markdown(
         width: 100%;
         box-sizing: border-box;
         padding: 0.35rem 0;
-    }
+    } 
     .area-info {
         flex: 1 1 auto;
         min-width: 0;
@@ -58,7 +58,7 @@ st.markdown(
         margin: 1rem 0;
     }
     .tarifa-card {
-        flex: 1 1 12rem;
+        flex: 1 1 8rem;
         box-sizing: border-box;
         padding: 1rem 1.1rem;
         border: 1px solid rgba(255, 255, 255, 0.14);
@@ -86,9 +86,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🏡 Disponibilidad Semanal")
+st.title("📅 Alquiler de Áreas Sociales")
 st.write("Consulta las áreas ocupadas y disponibles para los próximos 7 días.")
-st.info("⚠️ Esta plataforma es únicamente informativa. Para gestionar una Reserva, Contacte a la Administradora a los teléfonos 0412-0000000.")
+st.info("⚠️ Esta plataforma es únicamente informativa. Para gestionar una Reserva, Contacte a la Administradora a los teléfonos 0212-5731297 /  0212-5724764 de lunes a viernes !! solo llamadas !!.")
 st.markdown(
     """
     <div class="tarifas">
@@ -106,7 +106,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
 
 # 🔗 ENLACES DE TU GOOGLE SHEETS
 URL_AREAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaoZDeovX4F5ZJCQ54nXJhEykWgtcVRPlgJ8EmywqyBClzGvybN-fKUvbGTKkrxVuHcT5oL9xlBsok/pub?gid=0&single=true&output=csv"
@@ -141,7 +140,7 @@ if not areas_df.empty and not ocupaciones_df.empty:
         fecha_str = dia.strftime("%Y-%m-%d")
         
         with pestañas[i]:
-            st.write(f"### Estado para el {dia.strftime('%A, %d de %B de %Y')}")
+            st.write(f"### Disponibilidad {dia.strftime('%A, %d de %B de %Y')}")
             st.write("---")
             
             # Filtramos las ocupaciones de este día específico
@@ -158,11 +157,7 @@ if not areas_df.empty and not ocupaciones_df.empty:
                 reserva_exacta = ocupado_ese_dia[
                     ocupado_ese_dia["ID_Espacio"].astype(str).str.strip() == id_area
                 ]
-                # También buscamos si hay un bloqueo total de parrillas
-                reserva_total_parrillas = ocupado_ese_dia[
-                    ocupado_ese_dia["ID_Espacio"].astype(str).str.strip() == "PARR_TOT"
-                ]
-
+ 
                 lista_ocupados_str = ocupado_ese_dia["ID_Espacio"].astype(str).str.strip().tolist()
                 quien_alquilo = ""
 
@@ -170,10 +165,6 @@ if not areas_df.empty and not ocupaciones_df.empty:
                     disponible = False
                     if not reserva_exacta.empty:
                         quien_alquilo = str(reserva_exacta.iloc[0].get("Registrado_por", ""))
-                elif "PARR_TOT" in lista_ocupados_str and str(id_area).startswith("PARR_"):
-                    disponible = False
-                    if not reserva_total_parrillas.empty:
-                        quien_alquilo = str(reserva_total_parrillas.iloc[0].get("Registrado_por", "")) 
                 else:
                     disponible = True
 
