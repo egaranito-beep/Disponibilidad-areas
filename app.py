@@ -58,7 +58,7 @@ st.markdown(
         margin: 1rem 0;
     }
     .tarifa-card {
-        flex: 1 1 8rem;
+        flex: 1 1 10rem;
         box-sizing: border-box;
         padding: 1rem 1.1rem;
         border: 1px solid rgba(255, 255, 255, 0.14);
